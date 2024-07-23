@@ -4,3 +4,5 @@ htmlcov
 .ruff_cache
 **__pycache__**
 .coverage
+.env
+database.db
