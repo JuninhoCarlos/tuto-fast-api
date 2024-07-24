@@ -1,14 +1,6 @@
 from http import HTTPStatus
 
-import pytest
-from fastapi.testclient import TestClient
-
-from fast_zero.app import app
-
-
-@pytest.fixture()
-def client():
-    return TestClient(app)
+from fast_zero.schemas import UserSchemaPublic
 
 
 def test_root_deve_retornar_ok_e_ola_mundo(client):
@@ -32,12 +24,18 @@ def test_list_user(client):
     response = client.get('/users/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {
-        'users': [{'username': 'junin', 'email': 'junin@example.com'}]
-    }
+    assert response.json() == {'users': []}
 
 
-def test_update_user(client):
+def test_list_users_with_users(client, user):
+    user_schema = UserSchemaPublic.model_validate(user).model_dump()
+
+    response = client.get('/users/')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}
+
+
+def test_update_user(client, user):
     response = client.put(
         '/users/1',
         json={'username': 'update', 'email': 'update@example.com', 'password': 'psw'},
@@ -62,7 +60,7 @@ def test_update_user_not_found(client):
     }
 
 
-def test_delete_user(client):
+def test_delete_user(client, user):
     response = client.delete('/users/1')
 
     assert response.status_code == HTTPStatus.OK
